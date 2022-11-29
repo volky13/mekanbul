@@ -1,29 +1,31 @@
-var mongoose = require("mongoose");
-var dbUrl ="mongodb://localhost/mekanbul"
-//var dbUrl ="mongodb+srv://volkan123:volkan123@mekanbul.0zzopxd.mongodb.net/mekanbul?retryWrites=true&w=majority";
-require("./mekansema");
-mongoose.connect(dbUrl);
+var mongoose=require("mongoose");
+require("./mekansema")
+var dbURI = "mongodb://localhost/mekanbul";
 
-mongoose.connection.on("connected", () => {
-    console.log(dbUrl + " adresindeki veri tabanına bağlandı");
-});
-
-mongoose.connection.on("error", () => {
-    console.log("Bağlantı hatası");
-});
-
-mongoose.connection.on("disconnected", () => {
-    console.log("Bağlantı kesildi");
-});
-
-function close(msg, callback) {
-    mongoose.connection.close(() => {
+mongoose.connect(dbURI);
+function kapat(msg,callback){
+    mongoose.connection.close(function(){
         console.log(msg);
         callback();
-    });
+    }
+    );
 }
-process.on("SIGINT", () => {
-    close("Uygulama kapatilidi", () => {
+process.on("SIGINT",function(){
+    kapat("Uygulama Kapatıldı",function(){
         process.exit(0);
-    });
-});
+    }
+    );
+} 
+);
+mongoose.connection.on("connected",function(){
+    console.log(dbURI+" adresindeki veritabanına bağlandı")
+}
+);
+mongoose.connection.on("disconnected",function(){
+    console.log(dbURI+" adresindeki veritabanı bağlantısı koptu")
+}
+);
+mongoose.connection.on("error",function(){
+    console.log("Bağlantı hatası");
+}
+);

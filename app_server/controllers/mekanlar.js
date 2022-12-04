@@ -1,91 +1,104 @@
-var express = require("express");
-var router = express.Router();
+const axios = require("axios")
+
+var apiSecenekleri = {
+  sunucu: "http://localhost:3000",
+  apiYolu: "/api/mekanlar/"
+}
+
+var mesafeyiFormatla = function (mesafe) {
+  var yeniMesafe, birim
+  if (mesafe > 1) {
+    yeniMesafe = parseFloat(mesafe).toFixed(1)
+    birim = " km"
+  }
+  else {
+    yeniMesafe = parseInt(mesafe * 1000, 10)
+    birim = " m"
+  }
+  return yeniMesafe + birim
+}
+
+const anaSayfaOlustur = function (res, mekanListesi) {
+  var mesaj
+  if (!(mekanListesi instanceof Array)) {
+    mesaj = "API hatası!"
+    mekanListesi = []
+  }
+  else {
+    if (!mekanListesi.length) {
+      mesaj = "Civarda herhangi bir mekan yok."
+    }
+  }
+  res.render("anasayfa", {
+    "baslik": "Anasayfa",
+    "sayfaBaslik": {
+      "siteAd": "Mekanbul",
+      "slogan": "Mekanları Keşfet"
+    },
+    "mekanlar": mekanListesi,
+    "mesaj": mesaj
+  })
+}
 
 const anaSayfa = function (req, res, next) {
-   res.render('anasayfa',
-      {
-         "baslik": "Anasayfa",
-         "sayfabaslik": {
-            "siteAd": "Mekanbul",
-            "slogan": "Civardaki Mekanları Keşfet"
-         },
-         "mekanlar": 
-         [
-            {
-               "ad": "Starbucks",
-               "puan": "3",
-               "adres": "Centrum Garden AVM",
-               "imkanlar": ["Kahve", "Tatlı", "Soğuk İçecekler"],
-               "mesafe": "10km"
-            },
-            {
-               "ad": "Mackbear",
-               "puan": "4",
-               "adres": "IYAŞ Market Arkası, İtfaiye'nin ilerisi",
-               "imkanlar": ["Kahve", "Tatlı", "Su"],
-               "mesafe": "9km"
-            },
-            {
-               "ad": "Arabica",
-               "puan": "1",
-               "adres": "Lucca'nın karşısı",
-               "imkanlar": ["Tatlı", "Kahve"],
-               "mesafe": "11km"
-            }
-         ]
-      }
-      );
+  axios.get(apiSecenekleri.sunucu + apiSecenekleri.apiYolu, {
+    params: {
+      enlem: req.query.enlem,
+      boylam: req.query.boylam
+    }
+  }).then(function (response) {
+    var i, mekanlar
+    mekanlar = response.data
+    for (i = 0; i < mekanlar.length; i++) {
+      mekanlar[i].mesafe = mesafeyiFormatla(mekanlar[i].mesafe)
+    }
+    anaSayfaOlustur(res, mekanlar)
+  }).catch(function (hata) {
+    anaSayfaOlustur(res, hata)
+  })
+}
+
+const detaySayfasiOlustur = function (res, mekanDetaylari) {
+  mekanDetaylari.koordinat = {
+    "enlem": mekanDetaylari.koordinat[0],
+    "boylam": mekanDetaylari.koordinat[1]
+  }
+  res.render('mekanbilgisi', {
+    mekanBaslik: mekanDetaylari.ad,
+    mekanDetay: mekanDetaylari
+  })
+}
+
+const hataGoster = function (res, hata) {
+  var mesaj
+  if (hata.response.status == 404) {
+    mesaj = "404, Sayfa Bulunamadı!"
+  }
+  else {
+    mesaj = hata.response.status + " hatası"
+  }
+  res.status(hata.response.status)
+  res.render('error', {
+    "mesaj": mesaj
+  })
 }
 
 const mekanBilgisi = function (req, res, next) {
-   res.render('mekanbilgisi',
-      {
-         "baslik": "Mekan Bilgisi",
-         "mekanBaslik": "Starbucks",
-         "mekanDetay": {
-            "ad": "Starbucks",
-            "puan": "3",
-            "adres": "Centrum Garden AVM",
-            "saatler": [
-               {
-                  "günler": "Pazartesi-Cuma",
-                  "acilis": "7.30",
-                  "kapanis": "00.00",
-                  "kapali": false
-
-               },
-               {
-                  "günler": "Cumartesi-Pazar",
-                  "acilis": "9.30",
-                  "kapanis": "23.00",
-                  "kapali": false
-               }
-            ],
-            "imkanlar": ["Kahve", "Tatlı", "Soğuk İçecekler"],
-            "koordinatlar": {
-               "enlem": "37.78113",
-               "boylam": "30.54319"
-            },
-            "yorumlar": [
-               {
-                  "yorumYapan": "Volkan Ekici",
-                  "yorumMetni": "Fena Değil",
-                  "tarih": "24.10.2022",
-                  "puan": "4"
-               }
-
-            ]
-         }
-         }
-   );
-};
+  axios.get(apiSecenekleri.sunucu + apiSecenekleri.apiYolu + req.params.mekanid)
+    .then(function (response) {
+      detaySayfasiOlustur(res, response.data)
+    })
+    .catch(function (hata) {
+      hataGoster(res, hata)
+    })
+}
 
 const yorumEkle = function (req, res, next) {
-   res.render('yorumekle', { title: 'Yorum Ekle' });
-};
+  res.render('yorumekle', { title: 'Yorum Ekle' });
+}
 
 module.exports = {
-   anaSayfa,
-   mekanBilgisi,
-   yorumEkle
+  anaSayfa,
+  mekanBilgisi,
+  yorumEkle
 }

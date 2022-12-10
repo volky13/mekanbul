@@ -1,15 +1,15 @@
 $('#yorumEkle').submit(function (e) {
   $('.alert.alert-danger').hide();
   if (!$('select#rating').val() ||
-   !$('textarea#review').val()) {
-    if ($('.alert.alert-danger').length) {
-      $('.alert.alert-danger').show();
-    } else {
-      $(this).prepend('<div role="alert" class="alert alert-danger">Tüm Alanlar Gereklidir!</div>');
-     }
-     return false;
-   }
- });
+    !$('textarea#review').val()) {
+      if ($('.alert.alert-danger').length) {
+        $('.alert.alert-danger').show();
+      } else {
+        $(this).prepend('<div role="alert" class="alert alert-danger">Tüm Alanlar Gereklidir!</div>');
+      }
+      return false;
+    }
+  });
 
 
 $('#mekanEkle').submit(function (e) {
@@ -19,7 +19,7 @@ $('#mekanEkle').submit(function (e) {
       $('.alert.alert-danger').show();
     } else {
       $(this).prepend('<div role="alert" class="alert alert-danger">Tüm Alanlar Gereklidir!!!!</div>');
-     }
-     return false;
-   }
- });
+    }
+    return false;
+  }
+});

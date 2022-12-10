@@ -3,7 +3,7 @@ const axios = require("axios");
 
 var apiSecenekleri = {
   //sunucu: "http://localhost:3000",
-  sunucu: "https://mekanbul-4.volkanekici.repl.co",
+  sunucu: "https://mekanbul4.volkanekici.repl.co",
   apiYolu: "/api/mekanlar/",
 };
 
